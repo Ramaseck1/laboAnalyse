@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/TON_USER/TON_REPO.git'
+                git branch: 'main', url: 'https://github.com/Ramaseck1/laboAnalyse.git'
             }
         }
 
