@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_HUB_USERNAME = credentials('dockerhub-cred')
         DOCKER_HUB_PASSWORD = credentials('dockerhub-cred')
-        IMAGE_NAME = "${DOCKER_HUB_USERNAME}/labo-app"
         IMAGE_TAG = "latest"
     }
 
@@ -37,7 +36,10 @@ pipeline {
         stage('🐳 Build Docker Image') {
             steps {
                 echo 'Construction de l\'image Docker...'
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                script {
+                    def imageName = "${DOCKER_HUB_USERNAME}/labo-app"
+                    sh "docker build -t ${imageName}:${IMAGE_TAG} ."
+                }
             }
         }
 
@@ -51,15 +53,16 @@ pipeline {
         stage('📤 Push Docker Image') {
             steps {
                 echo 'Push de l\'image vers Docker Hub...'
-                sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
+                script {
+                    def imageName = "${DOCKER_HUB_USERNAME}/labo-app"
+                    sh "docker push ${imageName}:${IMAGE_TAG}"
+                }
             }
         }
 
         stage('🚀 Deploy to Render') {
             when {
-                expression { 
-                    return env.RENDER_API_KEY != null 
-                }
+                expression { env.RENDER_API_KEY != null }
             }
             steps {
                 echo 'Déclenchement du déploiement sur Render...'
@@ -83,10 +86,8 @@ pipeline {
             echo '❌ Le pipeline a échoué. Consultez les logs.'
         }
         always {
-        echo '🧹 Nettoyage...'
-        steps {
+            echo '🧹 Nettoyage...'
             sh 'docker logout || true'
-         }
-       }
+        }
     }
 }
