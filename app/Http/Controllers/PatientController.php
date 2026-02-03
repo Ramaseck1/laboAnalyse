@@ -48,14 +48,14 @@ class PatientController extends Controller
             'nom' => 'required|string',
             'age' => 'nullable|integer',
             'adresse' => 'nullable|string',
-             'telephone' => 'nullable|string|nullable:patients,telephone|regex:/^[0-9+\-\s()]{8,20}$/', // ✅ Ajouté
+            'telephone' => 'nullable|string|regex:/^[0-9+\-\s()]{8,20}$/', // ✅ Corrigé: enlevé "nullable:patients,telephone"
             'sexe' => 'nullable|in:M,F',
             'date_prescrit' => 'nullable|date',
             'date_edite' => 'nullable|date',
-            'diagnostisc' => 'nullable|string',
+            'diagnostic' => 'nullable|string', // ✅ CORRIGÉ: "diagnostic" au lieu de "diagnostisc"
         ], [
             'code.unique' => 'Ce code patient existe déjà, veuillez en choisir un autre.',
-             'telephone.regex' => 'Le format du numéro de téléphone est invalide.', // ✅ Ajouté
+            'telephone.regex' => 'Le format du numéro de téléphone est invalide.',
         ]);
 
         if ($validator->fails()) {
@@ -77,19 +77,19 @@ class PatientController extends Controller
             return response()->json(['message' => 'Patient non trouvé.'], 404);
         }
 
-       $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'code' => 'required|string|unique:patients,code,' . $id,
             'prenom' => 'required|string',
             'nom' => 'required|string',
             'age' => 'nullable|integer',
             'adresse' => 'nullable|string',
-            'telephone' => 'nullable|string|nullable:patients,telephone,' . $id . '|regex:/^[0-9+\-\s()]{8,20}$/', // ✅ Ajouté
+            'telephone' => 'nullable|string|regex:/^[0-9+\-\s()]{8,20}$/', // ✅ Corrigé: enlevé "nullable:patients,telephone," . $id
             'sexe' => 'nullable|in:M,F',
             'date_prescrit' => 'nullable|date',
             'date_edite' => 'nullable|date',
             'diagnostic' => 'nullable|string',
         ], [
-             'telephone.regex' => 'Le format du numéro de téléphone est invalide.', // ✅ Ajouté
+            'telephone.regex' => 'Le format du numéro de téléphone est invalide.',
         ]);
 
         if ($validator->fails()) {

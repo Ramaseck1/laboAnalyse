@@ -4,3 +4,4 @@ vendor
 .git
 .gitignore
 storage/logs
+.env.example

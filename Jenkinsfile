@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = "ramaseck2/labo-app"  // ⚠️ Changez en ramaseck2
+        IMAGE_NAME = "ramaseck2/labo-app" 
         IMAGE_TAG = "latest"
     }
 
