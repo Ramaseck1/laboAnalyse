@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Utilisation correcte des credentials Docker Hub
         DOCKER_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = "ramaseck1/labo-app" // Remplacez par votre nom d'utilisateur Docker Hub
+        IMAGE_NAME = "ramaseck2/labo-app"  // ⚠️ Changez en ramaseck2
         IMAGE_TAG = "latest"
     }
 
@@ -12,9 +11,7 @@ pipeline {
         stage('🔍 Checkout') {
             steps {
                 echo 'Récupération du code source depuis GitHub...'
-                git branch: 'main', 
-                    credentialsId: 'github-cred',
-                    url: 'https://github.com/Ramaseck1/laboAnalyse.git'
+                checkout scm
             }
         }
 
@@ -48,43 +45,17 @@ pipeline {
                 '''
             }
         }
-
-        stage('🚀 Deploy to Render') {
-            when {
-                expression { 
-                    // Vérifie si le credential render-api-key existe
-                    try {
-                        credentials('render-api-key')
-                        return true
-                    } catch (Exception e) {
-                        return false
-                    }
-                }
-            }
-            steps {
-                echo 'Déclenchement du déploiement sur Render...'
-                withCredentials([string(credentialsId: 'render-api-key', variable: 'RENDER_API_KEY')]) {
-                    sh """
-                        curl -X POST "https://api.render.com/v1/services/YOUR_SERVICE_ID/deploys" \
-                        -H "Authorization: Bearer \$RENDER_API_KEY" \
-                        -H "Content-Type: application/json" \
-                        -d '{"clearCache": true}'
-                    """
-                }
-            }
-        }
     }
 
     post {
         success {
             echo '✅ Pipeline exécuté avec succès !'
-            echo "🐳 Image Docker disponible : ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "🐳 Image disponible : ${IMAGE_NAME}:${IMAGE_TAG}"
         }
         failure {
-            echo '❌ Le pipeline a échoué. Consultez les logs.'
+            echo '❌ Le pipeline a échoué.'
         }
         always {
-            echo '🧹 Nettoyage...'
             sh 'docker logout || true'
         }
     }
