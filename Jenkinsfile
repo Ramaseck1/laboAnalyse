@@ -82,9 +82,11 @@ pipeline {
         failure {
             echo '❌ Le pipeline a échoué. Consultez les logs.'
         }
-        always {
-            echo '🧹 Nettoyage...'
+       always {
+        echo '🧹 Nettoyage...'
+        node {
             sh 'docker logout || true'
         }
+    }
     }
 }
