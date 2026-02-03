@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_USERNAME = credentials('dockerhub-cred')
-        DOCKER_HUB_PASSWORD = credentials('dockerhub-credentials_PSW')
+        DOCKER_HUB_PASSWORD = credentials('dockerhub-cred')
         IMAGE_NAME = "${DOCKER_HUB_USERNAME}/labo-app"
         IMAGE_TAG = "latest"
     }
