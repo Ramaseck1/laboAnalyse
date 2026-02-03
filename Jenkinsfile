@@ -2,13 +2,17 @@ pipeline {
     agent any
 
     environment {
+        // Utilisation correcte des credentials Docker Hub
+        DOCKER_CREDENTIALS = credentials('dockerhub-credentials')
+        IMAGE_NAME = "ramaseck1/labo-app" // Remplacez par votre nom d'utilisateur Docker Hub
         IMAGE_TAG = "latest"
     }
 
     stages {
         stage('🔍 Checkout') {
             steps {
-                git branch: 'main',
+                echo 'Récupération du code source depuis GitHub...'
+                git branch: 'main', 
                     credentialsId: 'github-cred',
                     url: 'https://github.com/Ramaseck1/laboAnalyse.git'
             }
@@ -16,46 +20,49 @@ pipeline {
 
         stage('📦 Install Dependencies') {
             steps {
+                echo 'Installation des dépendances Composer...'
                 sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
             }
         }
 
         stage('🧪 Run Tests') {
             steps {
+                echo 'Exécution des tests...'
                 sh 'php artisan test || echo "Tests ignorés"'
             }
         }
 
-        stage('🐳 Build & Push Docker Image') {
+        stage('🐳 Build Docker Image') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'dockerhub-username', variable: 'DOCKER_HUB_USERNAME'),
-                    string(credentialsId: 'dockerhub-password', variable: 'DOCKER_HUB_PASSWORD')
-                ]) {
-                    script {
-                        def imageName = "${DOCKER_HUB_USERNAME}/labo-app"
+                echo 'Construction de l\'image Docker...'
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
 
-                        echo "Connexion à Docker Hub..."
-                        sh 'echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin'
-
-                        echo "Construction de l\'image Docker..."
-                        sh "docker build -t ${imageName}:${IMAGE_TAG} ."
-
-                        echo "Push de l\'image Docker..."
-                        sh "docker push ${imageName}:${IMAGE_TAG}"
-
-                        echo "Logout Docker Hub..."
-                        sh 'docker logout || true'
-                    }
-                }
+        stage('🔐 Login & Push Docker Hub') {
+            steps {
+                echo 'Connexion à Docker Hub et push de l\'image...'
+                sh '''
+                    echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin
+                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
             }
         }
 
         stage('🚀 Deploy to Render') {
             when {
-                expression { env.RENDER_API_KEY != null }
+                expression { 
+                    // Vérifie si le credential render-api-key existe
+                    try {
+                        credentials('render-api-key')
+                        return true
+                    } catch (Exception e) {
+                        return false
+                    }
+                }
             }
             steps {
+                echo 'Déclenchement du déploiement sur Render...'
                 withCredentials([string(credentialsId: 'render-api-key', variable: 'RENDER_API_KEY')]) {
                     sh """
                         curl -X POST "https://api.render.com/v1/services/YOUR_SERVICE_ID/deploys" \
@@ -71,9 +78,14 @@ pipeline {
     post {
         success {
             echo '✅ Pipeline exécuté avec succès !'
+            echo "🐳 Image Docker disponible : ${IMAGE_NAME}:${IMAGE_TAG}"
         }
         failure {
             echo '❌ Le pipeline a échoué. Consultez les logs.'
+        }
+        always {
+            echo '🧹 Nettoyage...'
+            sh 'docker logout || true'
         }
     }
 }
