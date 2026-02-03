@@ -1,21 +1,39 @@
-# Créez le dossier docker s'il n'existe pas
-mkdir -p docker
-
-# Créez le fichier entrypoint.sh
-cat > docker/entrypoint.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "Waiting for MySQL to be ready..."
-until mysql -h"$DB_HOST" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1" &> /dev/null
-do
-  echo "MySQL is unavailable - sleeping"
-  sleep 2
+echo "🚀 Starting Laravel application..."
+
+# Attendre que la base de données soit prête
+echo "⏳ Waiting for database to be ready..."
+max_attempts=30
+attempt=0
+
+while [ $attempt -lt $max_attempts ]; do
+    if php artisan db:show &> /dev/null; then
+        echo "✅ Database is ready!"
+        break
+    fi
+    echo "⏳ Attempt $((attempt + 1))/$max_attempts - Database not ready yet..."
+    sleep 2
+    attempt=$((attempt + 1))
 done
 
-echo "MySQL is up - executing command"
-exec "$@"
-EOF
+if [ $attempt -eq $max_attempts ]; then
+    echo "❌ Could not connect to database after $max_attempts attempts"
+    echo "⚠️  Continuing anyway..."
+fi
 
-# Rendez-le exécutable
-chmod +x docker/entrypoint.sh
+# Exécuter les migrations
+echo "🔄 Running database migrations..."
+php artisan migrate --force || echo "⚠️  Migrations failed or already run"
+
+# Clear et cache les configurations
+echo "🧹 Clearing and caching configurations..."
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+
+echo "✅ Application setup complete!"
+
+# Exécuter la commande passée en argument (php-fpm)
+exec "$@"
