@@ -141,8 +141,7 @@ class PdfService
                     <div class="results-title">ANALYSE</div>
                     <div class="results-title">RÉSULTAT</div>
                     <div class="results-title">Intervalle de référence</div>
-                    <div class="results-title">Antériorités</div>
-                </div>
+                 </div>
                 
                 <table class="results-table">
                     <tbody>
