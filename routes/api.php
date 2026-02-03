@@ -28,8 +28,8 @@ Route::post('role', action: [Controller::class, 'createRole']);
 Route::middleware('auth:sanctum')->group(function () {
     // Route pour obtenir l'utilisateur connecté
     Route::get('/user', function (Request $request) {
-    return $request->user();
-});
+        return $request->user();
+    });
 
     // Routes de déconnexion et profil
     Route::post('logout', [UserController::class, 'logout']);
@@ -40,10 +40,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('departement', [DepartementController::class, 'createDepartement']);
 
     // Routes des analyses
-Route::get('patients/{patient}/analyses', [AnalyseController::class, 'index']);
-Route::get('analyses', [AnalyseController::class, 'index']); // Alias propre
-Route::post('/departements/{departement}/patients/{patient}/analyses', [AnalyseController::class, 'store']);
-Route::get('/departements/{departement}/analyses', action: [DepartementController::class, 'showDepartementAnalyses']);
+    Route::get('patients/{patient}/analyses', [AnalyseController::class, 'index']);
+    Route::get('analyses', [AnalyseController::class, 'index']); // Alias propre
+    Route::post('/departements/{departement}/patients/{patient}/analyses', [AnalyseController::class, 'store']);
+    Route::get('/departements/{departement}/analyses', action: [DepartementController::class, 'showDepartementAnalyses']);
 
     // Nouvelle création d'analyse sans patient
     Route::post('/departements/{departement}/analyses', [AnalyseController::class, 'storeWithoutPatient']);
@@ -61,26 +61,27 @@ Route::get('/departements/{departement}/analyses', action: [DepartementControlle
     Route::post('analyse/{analyse}/archive', [AnalyseController::class, 'archiveAnalyse']);
     Route::get('analyse/archive', [AnalyseController::class, 'getAllAnalyses']);
     Route::get('/analyse/archive/{archiveId}/pdf', [AnalyseController::class, 'getArchivedAnalysePdf']);
-    Route::get('/departements/{departement}/generate-pdf', 
-    [AnalyseController::class, 'generateDepartementPdf']
-);
+    Route::get(
+        '/departements/{departement}/generate-pdf',
+        [AnalyseController::class, 'generateDepartementPdf']
+    );
 
 
-    
+
     // NOUVELLE ROUTE POUR LE PDF
     Route::get('/analyse/{analyse}/pdf', [AnalyseController::class, 'generatePdf']);
-    
+
     // Route pour récupérer les détails d'une analyse détaillée
     Route::get('/departements/{departement}/analyses/details', [AnalyseController::class, 'showDepartementAnalysesDetails']);
     Route::get('/departements/{departement}/analyses/catalog', [DepartementController::class, 'showDepartementAnalysesCatalog']);
 
 
     // Routes des patients
-Route::get('/patients', [PatientController::class, 'index']);
+    Route::get('/patients', [PatientController::class, 'index']);
     Route::get('/patients-with-relations', [PatientController::class, 'indexWithRelations']);
-Route::get('/patients/{id}', [PatientController::class, 'show']);
-Route::post('/patients', [PatientController::class, 'store']);
-Route::put('/patients/{id}', [PatientController::class, 'update']);
-Route::delete('/patients/{id}', [PatientController::class, 'destroy']);
-Route::get('/patients/{id}/analyses', [PatientController::class, 'showPatientAnalyses']);
+    Route::get('/patients/{id}', [PatientController::class, 'show']);
+    Route::post('/patients', [PatientController::class, 'store']);
+    Route::put('/patients/{id}', [PatientController::class, 'update']);
+    Route::delete('/patients/{id}', [PatientController::class, 'destroy']);
+    Route::get('/patients/{id}/analyses', [PatientController::class, 'showPatientAnalyses']);
 });

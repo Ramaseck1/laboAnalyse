@@ -1,11 +1,11 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_HUB_USERNAME = credentials('dockerhub-username')
-        DOCKER_HUB_PASSWORD = credentials('dockerhub-password')
-        IMAGE_NAME = "ramaseck/laravel-app"
-    }
+   environment {
+    DOCKER_HUB_USERNAME = credentials('dockerhub-credentials_USR') // récupère le username
+    DOCKER_HUB_PASSWORD = credentials('dockerhub-credentials_PSW') // récupère le password
+    IMAGE_NAME = "$DOCKER_HUB_USERNAME/labo-app"
+}
 
     stages {
         stage('Checkout') {
@@ -45,5 +45,19 @@ pipeline {
                 sh 'docker push $IMAGE_NAME:latest'
             }
         }
+
+        stage('Deploy to Render') {
+            steps {
+                withCredentials([string(credentialsId: 'render-api-key', variable: 'RENDER_API_KEY')]) {
+                    sh """
+                    curl -X POST "https://api.render.com/v1/services/SERVICE_ID/deploys" \
+                    -H "Authorization: Bearer $RENDER_API_KEY" \
+                    -H "Content-Type: application/json" \
+                    -d '{"clearCache": true}'
+                    """
+                }
+            }
+        }
+
     }
 }
